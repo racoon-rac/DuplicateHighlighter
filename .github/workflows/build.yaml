@@ -1,47 +1,43 @@
-name: Build & Release Burp Extension
+name: Build & Release
 
 on:
   push:
-    branches: [ main ]
-    tags:     [ 'v*.*.*' ]      # バージョンタグを切った時はリリースも自動化
-  pull_request:
+    tags: [ 'v*.*.*' ]  # v1.0.0 などタグを push するとリリース
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
 
-      - name: Build fat‑jar
+      - name: Build jar
         run: ./gradlew jar
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: burp-duplicate-highlighter
-          path: build/libs/*-all.jar
-          retention-days: 30
+          name: burp-highlighter-jar
+          path: build/libs/*.jar
+          retention-days: 7
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: burp-duplicate-highlighter
+          name: burp-highlighter-jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: "*.jar"
-          draft: false
-          prerelease: false
