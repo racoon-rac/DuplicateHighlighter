@@ -1,0 +1,1 @@
+rootProject.name = "duplication-highliter-1.0"
